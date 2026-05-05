@@ -73,9 +73,9 @@ HLA_load <- function(directories, dir_names = NULL, cell_data_obj = NULL, scrHLA
       sufx1 <- stringr::str_split_fixed(sample, "\\*", 2)[,2]
       if (idx == 1L && !is.null(seu)) {
         message(cat("Linking Single-cell Dataset Obj sample", crayon::bgWhite(" ", sample, " "), "with scrHLAtag out file(s) in the directory you tagged as", 
-                    crayon::bgWhite(" ", names(directories)[which.min(stringdist::stringdist(sample, names(directories), method = "lv"))], " ")))
+                    crayon::bgWhite(" ", names(directories)[which.min(stringdist::stringdist(samp1, names(directories), method = "lv"))], " ")))
       }
-      d<-read.table(file.path(directories[which.min(stringdist::stringdist(sample, names(directories), method = "lv"))], x), header = F, sep=" ", fill = T) 
+      d<-read.table(file.path(directories[which.min(stringdist::stringdist(samp1, names(directories), method = "lv"))], x), header = F, sep=" ", fill = T) 
       if (is.null(colnames)) {
         colnames(d)<-c("name","CB", "nb", "UMI", "gene", "query_len","start", "mapq", "cigar", "NM", "AS", "s1", "de", "seq")
       } else {
