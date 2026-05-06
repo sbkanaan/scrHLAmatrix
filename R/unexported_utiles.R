@@ -470,7 +470,7 @@ Top_HLA_list_byCB <- function(reads, cell_data_obj = NULL, CB_rev_com = FALSE, h
     top_a <- c()
     a<-unique(top2list[[m]]$hla) %>% sort()
     for (j in 1:length(a)){
-      t<-as.data.table(table(top2list[[m]][top2list[[m]]$hla == a[j],]$toptwo))
+      t<-data.table::as.data.table(table(top2list[[m]][top2list[[m]]$hla == a[j],]$toptwo))
       t$toptwo <- t$V1
       t <- aggregate(N ~ toptwo, data = t, FUN = sum)
       t<- t[order(-t$N, t$toptwo),]
@@ -960,7 +960,7 @@ Top_HLA_list_byCB_preprocessed <- function(reads, cell_data_obj = NULL, hla_with
     top_a <- c()
     a<-unique(top2list[[m]]$hla) %>% sort()
     for (j in 1:length(a)){
-      t<-as.data.table(table(top2list[[m]][top2list[[m]]$hla == a[j],]$toptwo))
+      t<-data.table::as.data.table(table(top2list[[m]][top2list[[m]]$hla == a[j],]$toptwo))
       t$toptwo <- t$V1
       t <- aggregate(N ~ toptwo, data = t, FUN = sum)
       t<- t[order(-t$N, t$toptwo),]
@@ -1057,12 +1057,12 @@ Top_HLA_list_bulk <- function(reads_1, reads_2 = NULL, frac = 0.85, min_alleles_
   top_alleles <- c()
   for (j in 1:length(cts_notabc)){
     if (!use_alt_align_ABC) {
-      t<-as.data.table(table(reads_1[reads_1$hla == cts_notabc[j],]$gene))
+      t<-data.table::as.data.table(table(reads_1[reads_1$hla == cts_notabc[j],]$gene))
     } else {
       if (cts_notabc[j] %in% c("A", "B", "C")) {
-        t<-as.data.table(table(reads_2[reads_2$hla == cts_notabc[j],]$gene))
+        t<-data.table::as.data.table(table(reads_2[reads_2$hla == cts_notabc[j],]$gene))
       } else {
-        t<-as.data.table(table(reads_1[reads_1$hla == cts_notabc[j],]$gene))
+        t<-data.table::as.data.table(table(reads_1[reads_1$hla == cts_notabc[j],]$gene))
       }
     }
     # t$twofield <- sapply(t$V1, function(x) strsplit(x, ":")[[1]][1:2] %>% paste0(collapse=":"))

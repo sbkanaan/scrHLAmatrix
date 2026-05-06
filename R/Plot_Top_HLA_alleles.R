@@ -212,7 +212,7 @@ Top_HLA_plot_byCB <- function(reads, cell_data_obj = NULL, CB_rev_com = FALSE, h
   tab <- data.frame("toptwo"=character(0), "N"=integer(0), "hlagene"=character(0), "csum"=integer(0))
   a<-unique(top2cb$hla) %>% sort()
   for (j in 1:length(a)){
-    t<-as.data.table(table(top2cb[top2cb$hla == a[j],]$toptwo))
+    t<-data.table::as.data.table(table(top2cb[top2cb$hla == a[j],]$toptwo))
     t$toptwo <- t$V1
     t <- aggregate(N ~ toptwo, data = t, FUN = sum)
     t<- t[order(-t$N, t$toptwo),]
@@ -369,12 +369,12 @@ Top_HLA_plot_bulk <- function(reads_1, reads_2 = NULL, cluster_index = NULL, top
   tab <- data.frame("twofield"=character(0), "N"=integer(0), "fscore"=numeric(0), "hlagene"=character(0), "onefield"=character(0), "csum"=integer(0))
   for (j in 1:length(cts_notabc)){
     if (!use_alt_align_ABC) {
-      t<-as.data.table(table(reads_1[reads_1$hla == cts_notabc[j],]$gene))
+      t<-data.table::as.data.table(table(reads_1[reads_1$hla == cts_notabc[j],]$gene))
     } else {
       if (cts_notabc[j] %in% c("A", "B", "C")) {
-        t<-as.data.table(table(reads_2[reads_2$hla == cts_notabc[j],]$gene))
+        t<-data.table::as.data.table(table(reads_2[reads_2$hla == cts_notabc[j],]$gene))
       } else {
-        t<-as.data.table(table(reads_1[reads_1$hla == cts_notabc[j],]$gene))
+        t<-data.table::as.data.table(table(reads_1[reads_1$hla == cts_notabc[j],]$gene))
       }
     }
     # t$twofield <- sapply(t$V1, function(x) strsplit(x, ":")[[1]][1:2] %>% paste0(collapse=":"))
