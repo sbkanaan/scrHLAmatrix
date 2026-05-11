@@ -15,6 +15,7 @@
 #' @param bulk_to_perCB_threshold  threshold of number of uniquely mapped HLA alleles in the primary count file \code{reads_1} above which listing the top alleles uses the Pseudo-Bulk Algorithm and below which it uses the Per Single-Cell Algorithm. Default is \code{3000}.
 #' @param allowed_alleles_per_cell  a numeric (single integer or range) determining the minimum and maximum number of highest ranking allele genotypes per cell to keep if such number is beyond those limits after filtering by fraction; default is \code{c(1, 200)}, usefull in the early scrHLAtag iterations to give minimap2 lots of room to align; once you are ready to finalize the top HLA allele list, you can try \code{c(1, 2)} if you assume a cell can have a min of 1 allele (homozygous) and a max of 2 (heterozygous).
 #' @param flag_bad_alleles  logical, default \code{TRUE}. During final scrHLAtag-scrHLAmatrix iterations, nominated alleles with very good yet imperfect alignment scores tend to be excluded. Calling this argument \code{TRUE} will prevent their removal and merely flag them for further examination.
+#' @param analyze_bad_alleles is a logical, called TRUE if capturing potentially bad alleles (based on mm2 metrics) in a list is desired. These are usually nominated alleles with very good yet imperfect alignment scores, which warrant more thorough examination.
 #' @param stringent_mode  a logical, when called \code{TRUE}, the algorithm detects when the final iteration is near (unique alleles in read file is equal or less than 100 per allogeneic entity); thus, getting top alleles becomes more stringent, with \code{allowed_alleles_per_cell} switching to \code{c(1, 2)}. This argument, however, will be ignored if \code{allowed_alleles_per_cell} is other than the Default originally and if the \emph{Pseudo-Bulk} algorithm is running instead of the \emph{Per Single-Cell} algorithm.
 #' @param correct_alleles  a logical. Minimap2 of scrHLAtag will preferentially map reads that are in reality \emph{DPA1*02:02:02}, \emph{A*03:01:01}, \emph{B*13:02:01}, \emph{C*02:02:02}, or \emph{C*04:01:01}, to the presumed erroneous \emph{DPA1*02:38Q}, \emph{A*03:437Q}, \emph{B*13:123Q}, \emph{C*02:205Q}, or \emph{C*04:09N/C*04:61N}, respectively. When called \code{TRUE}, the algorithm will replace the unlikely allele(s) with their putative \emph{correct} version(s). Will work if \code{stringent_mode} is \code{TRUE}.
 #' @param field_resolution  integer fron \code{1} to \code{3}, to select the HLA nomenclature level of Field resolution, where \code{1}, \code{2}, or \code{3} will take into consideration the first, the first two, or the first three field(s) of HLA designation; default is \code{3}.
@@ -65,7 +66,7 @@ Top_HLA_list <- function(reads_1, reads_2 = NULL, k = 1, cell_data_obj = NULL, C
                          clust_method = "consensus", n_PCs = 50, dbscan_minPts = 30,
                          QC_mm2 = TRUE, s1_percent_pass_score = 80, AS_percent_pass_score = 80, NM_thresh = 15, de_thresh = 0.01,
                          top_cumulative_frac = 0.85, bulk_to_perCB_threshold = 3000,
-                         allowed_alleles_per_cell = c(1, 200), flag_bad_alleles = TRUE, stringent_mode = TRUE, correct_alleles = TRUE,                         
+                         allowed_alleles_per_cell = c(1, 200), flag_bad_alleles = TRUE, analyze_bad_alleles = TRUE, stringent_mode = TRUE, correct_alleles = TRUE,                         
                          field_resolution = 3, parallelize = TRUE, 
                          umap_spread = 5, umap_min_dist = 0.001, umap_repulsion = 0.001, seed = NULL, suppress_plots = TRUE, ...) {
   s <- Sys.time()
@@ -132,7 +133,7 @@ Top_HLA_list <- function(reads_1, reads_2 = NULL, k = 1, cell_data_obj = NULL, C
                                                                      CBs_with_counts_above = CBs_with_counts_above,
                                                                      frac = top_cumulative_frac,
                                                                      allowed_alleles_per_cell = allowed_alleles_per_cell,
-                                                                     flag_bad_alleles = flag_bad_alleles,
+                                                                     flag_bad_alleles = flag_bad_alleles, analyze_bad_alleles = analyze_bad_alleles,
                                                                      field_resolution = field_resolution,
                                                                      s1_percent_pass_score = s1_percent_pass_score, AS_percent_pass_score = AS_percent_pass_score, 
                                                                      NM_thresh = NM_thresh, de_thresh = de_thresh,

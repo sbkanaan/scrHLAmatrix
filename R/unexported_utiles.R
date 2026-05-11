@@ -8,6 +8,7 @@
 #' @param match_CB_with_obj  is a logical, called TRUE if filtering CBs in the scrHLAtag count file with matching ones in the cell dataset object is desired. 
 #' @param frac  is the fraction (0 to 1) of total reads for a particular HLA gene, which incorporates the highest ranking alleles of that gene in terms of number of reads; default at 0.85 .
 #' @param allowed_alleles_per_cell  is a numeric (single or range) determining the minimum and maximum number of highest ranking allele genotypes per cell to keep if such number is beyond those limits when filtering by fraction 'frac'; default is c(1, 200), usefull in the early scrHLAtag iterations to give minimap2 lots of room to align; once you are ready to finalize the top HLA allele list, you can try c(1, 2) if you assume a cell can have a min of 1 allele (homozygous) and a max of 2 (heterozygous).
+#' @param analyze_bad_alleles is a logical, called TRUE if capturing potentially bad alleles (based on mm2 metrics) in a list is desired. These are usually nominated alleles with very good yet imperfect alignment scores, which warrant more thorough examination.
 #' @param flag_bad_alleles  is a logical, called TRUE if instead of removing alleles with imperfect alignment scores (when finalizing the top HLA allele list), those alleles are flagged and returned separately.
 #' @param field_resolution  is a numeric, to select the HLA nomenclature level of Field resolution, where 1, 2, or 3 will take into consideration the first, the first two, or the first three field(s) of HLA designation; default is 3.
 #' @param QC_mm2  is a logical, called TRUE if removing low quality reads based on minimap2 tags is desired.
@@ -28,7 +29,7 @@
 #' @return a Vector of the top HLA alleles in the count files (in terms of reads per Cell Barcode).
 #' @noRd
 
-Top_HLA_list_byCB <- function(reads, cell_data_obj = NULL, CB_rev_com = FALSE, hla_with_counts_above = 5, CBs_with_counts_above = 15, match_CB_with_obj = TRUE, frac = 0.85, allowed_alleles_per_cell = c(1, 200), flag_bad_alleles = TRUE, field_resolution = 3, QC_mm2 = TRUE, s1_percent_pass_score = 80, AS_percent_pass_score = 80, NM_thresh = 15, de_thresh = 0.01, parallelize = TRUE) {
+Top_HLA_list_byCB <- function(reads, cell_data_obj = NULL, CB_rev_com = FALSE, hla_with_counts_above = 5, CBs_with_counts_above = 15, match_CB_with_obj = TRUE, frac = 0.85, allowed_alleles_per_cell = c(1, 200), flag_bad_alleles = TRUE, analyze_bad_alleles = TRUE, field_resolution = 3, QC_mm2 = TRUE, s1_percent_pass_score = 80, AS_percent_pass_score = 80, NM_thresh = 15, de_thresh = 0.01, parallelize = TRUE) {
   seu <- cell_data_obj
   cell_data_obj <- NULL
   ## parallelize
@@ -118,14 +119,14 @@ Top_HLA_list_byCB <- function(reads, cell_data_obj = NULL, CB_rev_com = FALSE, h
     return(reads[[m]])
   }, mc.cores = multi_thread)
   # if this is the final top HLA list, try capture potentially bad alleles (based on mm2 metrics) in a list
-  if (!(min(allowed_alleles_per_cell) == 1 && max(allowed_alleles_per_cell) <= 3)) {
+  if (!(min(allowed_alleles_per_cell) == 1 && max(allowed_alleles_per_cell) <= 3) || !analyze_bad_alleles) {
     bad_alleles <- mclapply(1:length(reads), function(m) { # `m` is an unused arg
       tmp <- character()
       return(tmp)
     }, mc.cores = multi_thread)
     names(bad_alleles) <- paste0("allo_cluster_", seq_along(bad_alleles))
     mm2_p <- mclapply(1:length(reads), function(m) { # `m` is an unused arg
-      tmp <- "Too many alleles per gene. Plots will be generated in later scrHLAtag iterations"
+      tmp <- "Either `analyze_bad_alleles` is TRUE or too many alleles per gene and plots will be generated in later scrHLAtag iterations"
       return(tmp)
     }, mc.cores = multi_thread)
     names(mm2_p) <- paste0("allo_cluster_", seq_along(mm2_p))
@@ -536,6 +537,7 @@ Top_HLA_list_byCB <- function(reads, cell_data_obj = NULL, CB_rev_com = FALSE, h
 #' @param frac  is the fraction (0 to 1) of total reads for a particular HLA gene, which incorporates the highest ranking alleles of that gene in terms of number of reads; default at 0.85 .
 #' @param allowed_alleles_per_cell  is a numeric (single or range) determining the minimum and maximum number of highest ranking allele genotypes per cell to keep if such number is beyond those limits when filtering by fraction 'frac'; default is c(1, 200), usefull in the early scrHLAtag iterations to give minimap2 lots of room to align; once you are ready to finalize the top HLA allele list, you can try c(1, 2) if you assume a cell can have a min of 1 allele (homozygous) and a max of 2 (heterozygous).
 #' @param flag_bad_alleles  is a logical, called TRUE if instead of removing alleles with imperfect alignment scores (when finalizing the top HLA allele list), those alleles are flagged and returned separately.
+#' @param analyze_bad_alleles is a logical, called TRUE if capturing potentially bad alleles (based on mm2 metrics) in a list is desired. These are usually nominated alleles with very good yet imperfect alignment scores, which warrant more thorough examination.
 #' @param field_resolution  is a numeric, to select the HLA nomenclature level of Field resolution, where 1, 2, or 3 will take into consideration the first, the first two, or the first three field(s) of HLA designation; default is 3.
 #' @param parallelize  is a logical, called TRUE if using parallel processing (multi-threading) is desired; default is TRUE.
 #' @import stringr
@@ -550,7 +552,7 @@ Top_HLA_list_byCB <- function(reads, cell_data_obj = NULL, CB_rev_com = FALSE, h
 #' @return a Vector of the top HLA alleles in the count files (in terms of reads per Cell Barcode).
 #' @noRd
 
-Top_HLA_list_byCB_preprocessed <- function(reads, cell_data_obj = NULL, hla_with_counts_above = 5, CBs_with_counts_above = 15, match_CB_with_obj = TRUE, frac = 0.85, allowed_alleles_per_cell = c(1, 200), flag_bad_alleles = TRUE, field_resolution = 3, s1_percent_pass_score = 80, AS_percent_pass_score = 80, NM_thresh = 15, de_thresh = 0.01, parallelize = TRUE) {
+Top_HLA_list_byCB_preprocessed <- function(reads, cell_data_obj = NULL, hla_with_counts_above = 5, CBs_with_counts_above = 15, match_CB_with_obj = TRUE, frac = 0.85, allowed_alleles_per_cell = c(1, 200), flag_bad_alleles = TRUE, analyze_bad_alleles = TRUE, field_resolution = 3, s1_percent_pass_score = 80, AS_percent_pass_score = 80, NM_thresh = 15, de_thresh = 0.01, parallelize = TRUE) {
   seu <- cell_data_obj
   cell_data_obj <- NULL
   ## parallelize
@@ -607,14 +609,14 @@ Top_HLA_list_byCB_preprocessed <- function(reads, cell_data_obj = NULL, hla_with
     return(reads[[m]])
   }, mc.cores = multi_thread)
   # if this is the final top HLA list, try capture potentially bad alleles (based on mm2 metrics) in a list
-  if (!(min(allowed_alleles_per_cell) == 1 && max(allowed_alleles_per_cell) <= 3)) {
+  if (!(min(allowed_alleles_per_cell) == 1 && max(allowed_alleles_per_cell) <= 3) || !analyze_bad_alleles) {
     bad_alleles <- mclapply(1:length(reads), function(m) { # `m` is an unused arg
       tmp <- character()
       return(tmp)
     }, mc.cores = multi_thread)
     names(bad_alleles) <- paste0("allo_cluster_", seq_along(bad_alleles))
     mm2_p <- mclapply(1:length(reads), function(m) { # `m` is an unused arg
-      tmp <- "Too many alleles per gene. Plots will be generated in later scrHLAtag iterations"
+      tmp <- "Either `analyze_bad_alleles` is TRUE or too many alleles per gene and plots will be generated in later scrHLAtag iterations"
       return(tmp)
     }, mc.cores = multi_thread)
     names(mm2_p) <- paste0("allo_cluster_", seq_along(mm2_p))

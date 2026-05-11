@@ -25,6 +25,7 @@ Top_HLA_list(
   bulk_to_perCB_threshold = 3000,
   allowed_alleles_per_cell = c(1, 200),
   flag_bad_alleles = TRUE,
+  analyze_bad_alleles = TRUE,
   stringent_mode = TRUE,
   correct_alleles = TRUE,
   field_resolution = 3,
@@ -77,6 +78,8 @@ Top_HLA_list(
 \item{allowed_alleles_per_cell}{a numeric (single integer or range) determining the minimum and maximum number of highest ranking allele genotypes per cell to keep if such number is beyond those limits after filtering by fraction; default is \code{c(1, 200)}, usefull in the early scrHLAtag iterations to give minimap2 lots of room to align; once you are ready to finalize the top HLA allele list, you can try \code{c(1, 2)} if you assume a cell can have a min of 1 allele (homozygous) and a max of 2 (heterozygous).}
 
 \item{flag_bad_alleles}{logical, default \code{TRUE}. During final scrHLAtag-scrHLAmatrix iterations, nominated alleles with very good yet imperfect alignment scores tend to be excluded. Calling this argument \code{TRUE} will prevent their removal and merely flag them for further examination.}
+
+\item{analyze_bad_alleles}{is a logical, called TRUE if capturing potentially bad alleles (based on mm2 metrics) in a list is desired. These are usually nominated alleles with very good yet imperfect alignment scores, which warrant more thorough examination.}
 
 \item{stringent_mode}{a logical, when called \code{TRUE}, the algorithm detects when the final iteration is near (unique alleles in read file is equal or less than 100 per allogeneic entity); thus, getting top alleles becomes more stringent, with \code{allowed_alleles_per_cell} switching to \code{c(1, 2)}. This argument, however, will be ignored if \code{allowed_alleles_per_cell} is other than the Default originally and if the \emph{Pseudo-Bulk} algorithm is running instead of the \emph{Per Single-Cell} algorithm.}
 
